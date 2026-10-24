@@ -17,11 +17,19 @@ Everything before the comma is positive. The verdict is in the second half.
 
 | Metric | Value |
 |---|---|
-| Validation accuracy | **~85%** |
-| Test set | 25,000 unseen reviews |
-| Training set | 25,000 reviews |
+| Test accuracy | To be updated after the re-run of the revised notebook |
+| Test set | 25,000 unseen reviews, evaluated once at the end |
+| Training set | 20,000 reviews for training, 5,000 held out for validation |
 
-Evaluated with accuracy and loss curves plus a confusion matrix, which shows where the errors actually fall rather than collapsing them into one number.
+The earlier ~85% figure came from a run that used the test set for validation during training, so it was not a clean held-out result. The revised notebook keeps the two separate.
+
+Evaluated with accuracy and loss curves, a confusion matrix and a per-class precision/recall/F1 report, which show where the errors actually fall rather than collapsing them into one number.
+
+## Training setup
+
+- **Validation split:** 20% of the training data, so the test set is never seen during training.
+- **Early stopping:** training stops when validation loss hasn't improved for 2 epochs, and the best epoch's weights are restored. The earlier run overfitted after epoch 2 (validation loss rose from 0.37 to 0.48).
+- **Up to 10 epochs**, Adam optimiser, binary cross-entropy.
 
 ## Architecture
 
@@ -31,7 +39,7 @@ Embedding (10,000 words) → Bidirectional LSTM (64) → Dense (64) → Dropout 
 
 **Word embeddings** map the 10,000 most frequent words into a dense vector space, so semantically related words sit near each other instead of being independent one-hot columns.
 
-**Sequence padding** normalises review lengths to a fixed input size.
+**Sequence padding** normalises review lengths to 250 tokens. Padding zeros are masked (`mask_zero=True`), so the LSTM doesn't read them. Long reviews are cut from the start (`truncating='pre'`), which keeps the ending, where the verdict usually is.
 
 ## Tech stack
 
